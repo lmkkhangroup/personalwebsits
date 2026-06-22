@@ -1,0 +1,512 @@
+﻿CTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MZ Enterprise - Core Intelligence Agency</title>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=Syncopate:wght@700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-color: #030303;
+            --surface: #0a0a0c;
+            --surface-accent: #121216;
+            --primary: #00ff66;
+            --text-main: #ffffff;
+            --text-muted: #888899;
+            --border: #1f1f26;
+            --danger: #ff3333;
+            --warning: #ffaa00;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Space Grotesk', sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* --- AUTH MATRIX LOCK SCREEN --- */
+        #auth-screen {
+            position: fixed;
+            inset: 0;
+            background: radial-gradient(circle at center, #070e0a 0%, var(--bg-color) 100%);
+            z-index: 9999;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .auth-container {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            padding: 40px;
+            border-radius: 12px;
+            width: 100%;
+            max-width: 400px;
+            text-align: center;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+        }
+
+        .auth-title {
+            font-family: 'Syncopate', sans-serif;
+            font-size: 1.2rem;
+            letter-spacing: 4px;
+            color: var(--primary);
+            margin-bottom: 30px;
+        }
+
+        .auth-input-group {
+            margin-bottom: 20px;
+            text-align: left;
+        }
+
+        .auth-input-group label {
+            display: block;
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            margin-bottom: 8px;
+            text-transform: uppercase;
+        }
+
+        .auth-input {
+            width: 100%;
+            background: var(--surface-accent);
+            border: 1px solid var(--border);
+            padding: 12px;
+            border-radius: 6px;
+            color: white;
+            font-size: 1rem;
+            outline: none;
+        }
+
+        .auth-btn {
+            width: 100%;
+            background: var(--primary);
+            color: black;
+            border: none;
+            padding: 14px;
+            border-radius: 6px;
+            font-weight: 700;
+            cursor: pointer;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .error-msg {
+            color: var(--danger);
+            font-size: 0.9rem;
+            margin-top: 15px;
+            display: none;
+        }
+
+        /* --- RESPONSIVE WORKSPACE LAYOUT --- */
+        #main-dashboard {
+            display: none; /* Controlled by JS upon auth */
+            flex-direction: column;
+            width: 100%;
+            flex: 1;
+        }
+
+        /* Top Navigation Header */
+        .top-navbar {
+            background: var(--surface);
+            border-bottom: 1px solid var(--border);
+            padding: 15px 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .logo-area {
+            font-family: 'Syncopate', sans-serif;
+            font-size: 1.1rem;
+            letter-spacing: 2px;
+            color: var(--primary);
+        }
+
+        .user-profile {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 8px 16px;
+            background: var(--surface-accent);
+            border-radius: 20px;
+            border: 1px solid var(--border);
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            background: var(--primary);
+            border-radius: 50%;
+            box-shadow: 0 0 8px var(--primary);
+        }
+
+        /* Main Dashboard Split Grid */
+        .dashboard-grid {
+            display: flex;
+            flex: 1;
+            flex-direction: row;
+        }
+
+        .center-workspace {
+            flex: 3;
+            padding: 24px;
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+        }
+
+        .right-ledger-panel {
+            flex: 1;
+            background: var(--surface);
+            border-left: 1px solid var(--border);
+            padding: 24px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            min-width: 300px;
+        }
+
+        /* Twin Cards Setup */
+        .cards-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 24px;
+        }
+
+        .card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 24px;
+        }
+
+        .card-header {
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--text-muted);
+            margin-bottom: 12px;
+        }
+
+        .vault-balance {
+            font-size: 2.2rem;
+            font-weight: 700;
+            color: var(--primary);
+        }
+
+        .withdraw-box {
+            display: flex;
+            gap: 12px;
+            margin-top: 15px;
+        }
+
+        .withdraw-input {
+            flex: 1;
+            background: var(--surface-accent);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            padding: 12px;
+            color: white;
+            outline: none;
+        }
+
+        /* 🔑 API KEY SLOT VISUALS (FRONT & CENTER) 🔑 */
+        .key-input-field {
+            width: 100%;
+            background: #141419;
+            border: 1px solid var(--warning);
+            border-radius: 6px;
+            padding: 12px;
+            color: var(--warning);
+            font-family: monospace;
+            font-size: 0.9rem;
+            outline: none;
+            margin-top: 5px;
+        }
+
+        /* COMMAND INTERACTION CORE (CHAT) */
+        .terminal-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 24px;
+            display: flex;
+            flex-direction: column;
+            flex: 1;
+            min-height: 380px;
+        }
+
+        .terminal-body {
+            flex: 1;
+            background: var(--surface-accent);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 20px;
+            overflow-y: auto;
+            font-family: monospace;
+            font-size: 0.95rem;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            max-height: 400px;
+        }
+
+        .msg { line-height: 1.4; word-break: break-word; }
+        .msg.user { color: #00bfff; }
+        .msg.system { color: var(--primary); }
+        .msg.error { color: var(--danger); }
+
+        .terminal-input-area {
+            display: flex;
+            gap: 12px;
+            margin-top: 16px;
+        }
+
+        .term-input {
+            flex: 1;
+            background: var(--surface-accent);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            padding: 14px;
+            color: white;
+            font-family: monospace;
+            outline: none;
+        }
+
+        .send-btn {
+            background: var(--primary);
+            border: none;
+            color: black;
+            padding: 0 24px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        /* LEDGERS LIST */
+        .ledger-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            font-family: monospace;
+            font-size: 0.85rem;
+        }
+
+        .ledger-item {
+            padding: 12px;
+            background: var(--surface-accent);
+            border-left: 3px solid var(--primary);
+            border-radius: 4px;
+        }
+
+        /* BREAKPOINT FOR INTERFACE SECURITY ON MOBILE */
+        @media (max-width: 950px) {
+            .dashboard-grid {
+                flex-direction: column;
+            }
+            .right-ledger-panel {
+                border-left: none;
+                border-top: 1px solid var(--border);
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- 1. LOCK SCREEN (FACE 1 INITIAL INTERFACE) -->
+    <div id="auth-screen">
+        <div class="auth-container">
+            <div class="auth-title">MZ ENTERPRISE ROOT</div>
+            <div class="auth-input-group">
+                <label>Admin Access Email</label>
+                <input type="email" id="auth-email" class="auth-input" value="maaz@gmail.com">
+            </div>
+            <div class="auth-input-group">
+                <label>Master Security PIN</label>
+                <input type="password" id="auth-pin" class="auth-input" placeholder="••••">
+            </div>
+            <button class="auth-btn" onclick="verifyCredentials()">Initialize Terminal</button>
+            <div id="login-error" class="error-msg">ACCESS DENIED. PIN UNRESOLVED.</div>
+        </div>
+    </div>
+
+    <!-- 2. MAIN CORE OPERATIONS DASHBOARD (FACE 2 INTEGRATED VISUALS) -->
+    <div id="main-dashboard">
+        
+        <!-- HEADER PROFILE NODE -->
+        <div class="top-navbar">
+            <div class="logo-area">MZ ENTERPRISE CONTROL CORE</div>
+            <div class="user-profile">
+                <div class="status-dot"></div>
+                <div style="font-weight: 500; font-size: 0.9rem;">Lala Maaz Khattak (Root)</div>
+            </div>
+        </div>
+
+        <!-- DASHBOARD SPLIT MATRIX -->
+        <div class="dashboard-grid">
+            
+            <!-- MAIN UTILITY HUB -->
+            <div class="center-workspace">
+                
+                <div class="cards-container">
+                    <!-- VAULT COMPONENT -->
+                    <div class="card">
+                        <div class="card-header">Secure Vault Balance</div>
+                        <div class="vault-balance" id="vault-display">$4,850.00</div>
+                        <div class="withdraw-box">
+                            <input type="number" id="withdraw-amount" class="withdraw-input" placeholder="Amount ($)">
+                            <button class="withdraw-btn" onclick="executeWithdrawal()">Withdraw</button>
+                        </div>
+                    </div>
+
+                    <!-- 🔑 THE API KEY GATEWAY INTERFACE (SAMNE) 🔑 -->
+                    <div class="card" style="border: 1px solid var(--warning); background: rgba(255, 170, 0, 0.01);">
+                        <div class="card-header" style="color: var(--warning); font-weight: bold;">🔑 GEMINI CORE API INTERFACE</div>
+                        <div style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 6px;">Input your live API key to activate AI system:</div>
+                        <input type="text" id="direct-api-key" class="key-input-field" placeholder="Paste your Gemini API key here (AIzaSy...)">
+                        <div style="font-size: 0.75rem; color: var(--primary); margin-top: 8px;">● Gateway Protocol: Awaiting Direct Browser Handshake</div>
+                    </div>
+                </div>
+
+                <!-- OPERATIONAL TERMINAL INTERFACE -->
+                <div class="terminal-card">
+                    <div class="card-header">Live Back-Channel Command Core (Gemini Flash Engine)</div>
+                    <div class="terminal-body" id="chat-box">
+                        <div class="msg system">[SYSTEM] Root systems active. Input your Gemini Key above, then issue secure server commands.</div>
+                    </div>
+                    <div class="terminal-input-area">
+                        <input type="text" id="cmd-input" class="term-input" placeholder="Transmit instruction to AI Engine..." onkeydown="if(event.key==='Enter') sendCommand()">
+                        <button class="send-btn" onclick="sendCommand()">EXECUTE</button>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- RIGHT LEDGER HUB -->
+            <div class="right-ledger-panel">
+                <div class="card-header">Live System Ledger</div>
+                <div class="ledger-list" id="ledger-box">
+                    <div class="ledger-item">[SUCCESS] System initialisation phase complete.</div>
+                    <div class="ledger-item">[SUCCESS] Secure pipeline linked successfully.</div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- MAIN INTERACTIVE OPERATIONS ENGINE -->
+    <script>
+        let currentBalance = 4850.00;
+        let ledgers = [
+            { text: "[SUCCESS] System initialisation phase complete." },
+            { text: "[SUCCESS] Secure pipeline linked successfully." }
+        ];
+
+        // 1. GATE RECOGNITION
+        function verifyCredentials() {
+            const email = document.getElementById('auth-email').value;
+            const pin = document.getElementById('auth-pin').value;
+            if (email === "maaz@gmail.com" && pin === "7860") {
+                document.getElementById('auth-screen').style.display = 'none';
+                document.getElementById('main-dashboard').style.display = 'flex';
+                updateUI();
+            } else {
+                document.getElementById('login-error').style.display = 'block';
+            }
+        }
+
+        function updateUI() {
+            document.getElementById('vault-display').textContent = `$${currentBalance.toFixed(2)}`;
+            const ledgerBox = document.getElementById('ledger-box');
+            ledgerBox.innerHTML = "";
+            ledgers.forEach(item => {
+                const div = document.createElement('div');
+                div.className = 'ledger-item';
+                div.textContent = item.text;
+                ledgerBox.appendChild(div);
+            });
+        }
+
+        // 2. VAULT WITHDRAW TRANSACTION ENGINE
+        function executeWithdrawal() {
+            const amtInput = document.getElementById('withdraw-amount');
+            const amount = parseFloat(amtInput.value);
+            if(!amount || amount <= 0) return;
+
+            if (amount > currentBalance) {
+                appendLog("chat-box", `[DENIED] Security Trigger: Overdraft protection prevented transaction.`, "error");
+                return;
+            }
+
+            currentBalance -= amount;
+            ledgers.unshift({ text: `[PENDING] Personal Withdraw of $${amount.toFixed(2)} dispatched to logs.` });
+            updateUI();
+            appendLog("chat-box", `[SUCCESS] Withdrawal of $${amount.toFixed(2)} processed locally.`, "system");
+            amtInput.value = "";
+        }
+
+        // 3. SECURE DIRECT AI BROWSER ENGINE
+        async function sendCommand() {
+            const inputElement = document.getElementById('cmd-input');
+            const keyElement = document.getElementById('direct-api-key');
+            const command = inputElement.value.trim();
+            const USER_KEY = keyElement.value.trim();
+
+            if(!command) return;
+
+            appendLog("chat-box", `Maaz bhai: ${command}`, "user");
+            inputElement.value = "";
+
+            if (!USER_KEY) {
+                appendLog("chat-box", `[ERROR] Secure handshake halted. Gemini API key missing from input slot.`, "error");
+                return;
+            }
+
+            try {
+                // Direct integration call structure to Google Network
+                const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${USER_KEY}`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                        contents: [{ parts: [{ text: `Aap Maaz Khattak ke personal AI Assistant hain. Maaz ke sath urdu/hindi roman script mein 'Maaz bhai' keh kar baat karein. Unhe bht achi guidelines dein. Message: ${command}` }] }]
+                    })
+                });
+
+                const data = await response.json();
+                
+                if (data.error) {
+                    appendLog("chat-box", `[API ERROR] Validation failed: ${data.error.message}`, "error");
+                } else {
+                    const aiReply = data.candidates[0].content.parts[0].text;
+                    appendLog("chat-box", `Agent Core: ${aiReply}`, "system");
+                }
+            } catch(e) {
+                appendLog("chat-box", `[FAILURE] Handshake broken. Verification parameters failed to respond.`, "error");
+            }
+        }
+
+        function appendLog(boxId, text, className) {
+            const box = document.getElementById(boxId);
+            const msg = document.createElement('div');
+            msg.className = `msg ${className}`;
+            msg.textContent = text;
+            box.appendChild(msg);
+            box.scrollTop = box.scrollHeight;
+        }
+    </script>
+</body>
+</html>
